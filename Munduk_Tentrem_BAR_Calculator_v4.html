@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Munduk Tentrem — BAR & Promotion Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f8f8f6;color:#1a1a1a;padding:16px;max-width:900px;margin:0 auto}
+
+/* ── Context panel ── */
+.ctx-header{display:flex;align-items:center;justify-content:space-between;background:#1A2C5B;color:#fff;padding:12px 16px;border-radius:8px 8px 0 0;cursor:pointer;user-select:none}
+.ctx-header h1{font-size:14px;font-weight:600;letter-spacing:.01em}
+.ctx-header .sub{font-size:11px;opacity:.7;margin-top:2px}
+.ctx-toggle{font-size:11px;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:12px;white-space:nowrap}
+.ctx-body{background:#fff;border:1px solid #d9d9d9;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;transition:max-height .3s ease}
+.ctx-body.open{max-height:2000px}
+.ctx-body.closed{max-height:0}
+.ctx-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #eee}
+@media(max-width:600px){.ctx-grid{grid-template-columns:1fr}}
+.ctx-section{padding:14px 16px;border-right:1px solid #eee}
+.ctx-section:nth-child(even){border-right:none}
+.ctx-section:last-child{border-right:none}
+.ctx-section h3{font-size:10px;font-weight:700;color:#0F6E56;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.ctx-row{display:flex;gap:8px;font-size:11px;margin-bottom:4px;line-height:1.5}
+.ctx-label{color:#888;min-width:90px;flex-shrink:0}
+.ctx-val{color:#1a1a1a;font-weight:500}
+.ctx-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+.ctx-table th{background:#f5f5f5;font-weight:600;padding:4px 6px;text-align:left;border-bottom:1px solid #eee;font-size:10px}
+.ctx-table td{padding:4px 6px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.ctx-table tr:last-child td{border-bottom:none}
+.ctx-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.badge-bc{background:#E6F1FB;color:#0C447C;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.badge-ex{background:#FAEEDA;color:#633806;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.badge-tr{background:#FCEBEB;color:#791F1F;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:600}
+.resume-box{margin:0;padding:14px 16px;background:#FAEEDA;border-top:1px solid #eee}
+.resume-box h3{font-size:10px;font-weight:700;color:#854F0B;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.resume-text{font-size:11px;line-height:1.7;color:#412402;white-space:pre-wrap;background:#fff8f0;border:1px solid #EF9F27;border-radius:6px;padding:10px 12px}
+.copy-btn{margin-top:8px;font-size:11px;padding:5px 14px;background:#854F0B;color:#fff;border:none;border-radius:6px;cursor:pointer}
+.copy-btn:hover{background:#633806}
+.copy-ok{color:#0F6E56;font-size:11px;margin-left:8px;display:none}
+
+/* ── Calculator (preserved from v3) ── */
+.calc-wrap{margin-top:12px;background:#fff;border:1px solid #d9d9d9;border-radius:8px;padding:16px}
+.sec{margin-bottom:1.25rem}
+.sec-title{font-size:11px;font-weight:600;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;color:#888}
+.field select,.field input[type=number]{width:100%;padding:5px 8px;font-size:13px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#1a1a1a}
+.program-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-bottom:10px}
+.prog-btn{padding:8px 10px;font-size:12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;text-align:left;line-height:1.4;transition:all .12s}
+.prog-btn:hover{background:#f5f5f5}
+.prog-btn.active{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.prog-btn .pname{font-weight:600;font-size:12px;display:block}
+.prog-btn .pmeta{font-size:10px;opacity:.7;display:block;margin-top:1px}
+.toggle-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;background:#f8f8f6;border-radius:6px;margin-bottom:10px}
+.toggle-row .tlabel{font-size:12px;color:#666;margin-right:4px;font-weight:600}
+.tog{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#666;padding:4px 10px;border:1px solid #ccc;border-radius:20px;background:#fff;transition:all .12s;user-select:none}
+.tog.on{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.tog.off{background:#f5f5f5;color:#aaa;border-color:#ddd}
+.tog-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.pct-input{display:flex;align-items:center;gap:5px;font-size:12px;color:#666}
+.pct-input input{width:52px;padding:4px 6px;font-size:12px;border:1px solid #ccc;border-radius:6px}
+.divider{border:none;border-top:1px solid #eee;margin:1rem 0}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.mcard{background:#f8f8f6;border-radius:6px;padding:10px 12px}
+.mlabel{font-size:11px;color:#888;margin-bottom:3px}
+.mval{font-size:19px;font-weight:600;color:#1a1a1a}
+.msub{font-size:11px;color:#888;margin-top:2px}
+.wfrow{display:flex;align-items:center;padding:6px 10px;border-radius:6px;font-size:12px;margin-bottom:2px;gap:6px}
+.wfrow.base{background:#f5f5f5;font-weight:600}
+.wfrow.deduct{background:#FCEBEB;color:#791F1F}
+.wfrow.warn{background:#FAEEDA;color:#854F0B}
+.wfrow.sub{background:#f5f5f5;border:1px solid #ddd;font-weight:600}
+.wfrow.ok{background:#E1F5EE;color:#085041;font-weight:600}
+.wfrow.skip{background:#f5f5f5;color:#bbb;font-style:italic}
+.wf-lbl{flex:1}
+.wf-note{font-size:10px;opacity:.7}
+.wf-val{min-width:110px;text-align:right;font-weight:600}
+.info{background:#f8f8f6;border-radius:6px;padding:9px 12px;font-size:12px;color:#666;line-height:1.65;margin-top:8px}
+.otabadge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:8px;margin-right:4px;font-weight:600}
+.bc{background:#E6F1FB;color:#0C447C}
+.ex{background:#FAEEDA;color:#633806}
+.tr{background:#FCEBEB;color:#791F1F}
+.ver{font-size:10px;color:#bbb;text-align:right;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- ══ CONTEXT PANEL ══════════════════════════════════════════════════════ -->
+<div class="ctx-header" onclick="toggleCtx()">
+  <div>
+    <div class="h1" style="font-size:14px;font-weight:700;color:#fff">Munduk Tentrem — BAR &amp; Promotion Calculator</div>
+    <div class="sub">Dahlia Suriaatmaja · Commercial Manager · Munduk, North Bali</div>
+  </div>
+  <div class="ctx-toggle" id="ctx-toggle-lbl">▼ Show context</div>
+</div>
+
+<div class="ctx-body closed" id="ctx-body">
+
+  <div class="ctx-grid">
+
+    <!-- Property -->
+    <div class="ctx-section">
+      <h3>Property</h3>
+      <div class="ctx-row"><span class="ctx-label">Property</span><span class="ctx-val">Munduk Tentrem — boutique eco-resort</span></div>
+      <div class="ctx-row"><span class="ctx-label">Location</span><span class="ctx-val">Munduk, North Bali (Buleleng highlands)</span></div>
+      <div class="ctx-row"><span class="ctx-label">Inventory</span><span class="ctx-val">8 rooms: 5 DLX · 1 JRST · 2 ST</span></div>
+      <div class="ctx-row"><span class="ctx-label">Channel mgr</span><span class="ctx-val">SiteMinder</span></div>
+      <div class="ctx-row"><span class="ctx-label">PMS</span><span class="ctx-val">Gusto</span></div>
+      <div class="ctx-row"><span class="ctx-label">Main OTAs</span><span class="ctx-val">Booking.com · Expedia · Trip.com</span></div>
+    </div>
+
+    <!-- BAR Structure -->
+    <div class="ctx-section">
+      <h3>BAR Structure (IDR / night)</h3>
+      <table class="ctx-table">
+        <tr><th>Room</th><th class="num">Low</th><th class="num">High (Jul)</th><th class="num">Peak (Aug)</th></tr>
+        <tr><td>DLX (×5)</td><td class="num">2,070,000</td><td class="num">3,900,000</td><td class="num">4,590,000</td></tr>
+        <tr><td>JRST (×1)</td><td class="num">2,740,000</td><td class="num">4,440,000</td><td class="num">5,410,000</td></tr>
+        <tr><td>ST (×2)</td><td class="num">3,330,000</td><td class="num">5,200,000</td><td class="num">5,950,000</td></tr>
+      </table>
+    </div>
+
+    <!-- Active promotions -->
+    <div class="ctx-section">
+      <h3>Active Promotions (as of May 22, 2026)</h3>
+      <table class="ctx-table">
+        <tr><th>OTA</th><th>Promotion</th><th>Detail</th></tr>
+        <tr><td><span class="badge-bc">Bcom</span></td><td>LM Deal DLX+ST</td><td>15% · May 22–Jun 30</td></tr>
+        <tr><td><span class="badge-bc">Bcom</span></td><td>LM Deal JRST</td><td>25% · May 22–Jun 30</td></tr>
+        <tr><td><span class="badge-bc">Bcom</span></td><td>Getaway Deal</td><td>15% · Sep 16–30 only</td></tr>
+        <tr><td><span class="badge-bc">Bcom</span></td><td>Early Booker</td><td>Sep 16 onwards</td></tr>
+        <tr><td><span class="badge-ex">Expedia</span></td><td>LM Deal</td><td>20% DLX+ST / 30% JRST</td></tr>
+      </table>
+    </div>
+
+    <!-- Stacking logic -->
+    <div class="ctx-section">
+      <h3>OTA Stacking Logic</h3>
+      <table class="ctx-table">
+        <tr><th>OTA / Program</th><th>Formula</th></tr>
+        <tr><td>Bcom BASIC / EB30</td><td>BAR×(1−P)×(1−Mob)×(1−Mem)</td></tr>
+        <tr><td>Bcom CAMPAIGN</td><td>BAR×(1−P)×(1−Mem) — no mobile</td></tr>
+        <tr><td>Expedia all</td><td>BAR×(1−Mob) then −(Mem+P)% additive</td></tr>
+        <tr><td>Trip.com all</td><td>(BAR×(1−Comm))×(1−P−Mem) mobile OFF</td></tr>
+      </table>
+    </div>
+
+    <!-- Comp set -->
+    <div class="ctx-section">
+      <h3>Comp Set</h3>
+      <div class="ctx-row"><span class="ctx-label">DLX / JRST</span><span class="ctx-val">Munduk Heaven · Munduk Menir · Kayu Kopi</span></div>
+      <div class="ctx-row"><span class="ctx-label">ST</span><span class="ctx-val">Munduk Heaven · Munduk Menir</span></div>
+      <div class="ctx-row"><span class="ctx-label">ST ceiling</span><span class="ctx-val">MMP — ceiling reference only</span></div>
+    </div>
+
+    <!-- Workstreams -->
+    <div class="ctx-section">
+      <h3>Project Workstreams</h3>
+      <div class="ctx-row" style="flex-direction:column;gap:3px">
+        <span style="font-size:11px;color:#333;font-weight:600">✓ OTA promotion cleanup</span>
+        <span style="font-size:11px;color:#333;font-weight:600">✓ BAR structure locked</span>
+        <span style="font-size:11px;color:#333;font-weight:600">✓ Comp set monitoring workbook (Google Sheets)</span>
+        <span style="font-size:11px;color:#333;font-weight:600">✓ BAR &amp; Promotion Calculator (this file)</span>
+        <span style="font-size:11px;color:#333;font-weight:600">✓ CEO Report template</span>
+        <span style="font-size:11px;color:#888;margin-top:4px">10 bookings confirmed May 22 · Martin Wiesinger Suite Jul 28–Aug 1 IDR 12.6M</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Resume prompt -->
+  <div class="resume-box">
+    <h3>Claude Resume Prompt — copy &amp; paste into any new conversation</h3>
+    <div class="resume-text" id="resume-text">I am Dahlia Suriaatmaja, Commercial Manager at Munduk Tentrem, a boutique eco-resort in Munduk, North Bali. 8 rooms: 5 DLX, 1 JRST, 2 ST. We use SiteMinder as channel manager and Gusto as PMS. Main OTAs are Booking.com, Expedia, and Trip.com.
+
+We have been working together on several things:
+1. OTA promotion cleanup — Booking.com LM Deal 15% DLX+ST and 25% JRST both active May 22–Jun 30. Expedia LM 20/30 active. Getaway Deal reduced to 15% and restricted to Sep 16–30. Early Booker restricted to Sep 16 onwards.
+2. BAR structure — Low season DLX 2,070,000 / JRST 2,740,000 / ST 3,330,000. High season July DLX 3,900,000 / JRST 4,440,000 / ST 5,200,000. Peak August DLX 4,590,000 / JRST 5,410,000 / ST 5,950,000.
+3. Comp set monitoring workbook built in Google Sheets — Entry Form, Daily Log, Weekly Summary, Next 30 Days, Next 60 Days tabs. Fixed formulas using AVERAGEIF for comp average.
+4. Comp set: DLX/JRST — Munduk Heaven, Munduk Menir, Kayu Kopi. ST — Munduk Heaven, Munduk Menir. MMP is ceiling reference only for ST.
+5. CEO Report template built with Data Input tab and auto-populating report.
+6. 10 bookings confirmed as of May 22 including Martin Wiesinger Suite Jul 28–Aug 1 IDR 12.6M.
+7. BAR &amp; Promotion Calculator HTML tool built — 13 programs across Bcom/Expedia/Trip with correct stacking logic per OTA. Mobile and member toggles per program. Rate Monitor view shows all programs × all rooms × all seasons side by side.</div>
+    <button class="copy-btn" onclick="copyResume()">Copy to clipboard</button>
+    <span class="copy-ok" id="copy-ok">Copied!</span>
+  </div>
+
+</div>
+<!-- ══ END CONTEXT PANEL ═════════════════════════════════════════════════ -->
+
+
+<!-- ══ CALCULATOR ════════════════════════════════════════════════════════ -->
+<div class="calc-wrap">
+
+<div class="sec">
+  <div class="sec-title">Room &amp; Season</div>
+  <div class="row">
+    <div class="field">
+      <label>Room type</label>
+      <select id="room" onchange="setBAR()">
+        <option value="DLX">Deluxe (DLX)</option>
+        <option value="JRST">Junior Suite (JRST)</option>
+        <option value="ST">Suite (ST)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Season</label>
+      <select id="season" onchange="setBAR()">
+        <option value="low">Low</option>
+        <option value="high">High (July)</option>
+        <option value="peak">Peak (Aug)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>BAR (IDR, editable)</label>
+      <input type="number" id="bar" value="2070000" step="10000" oninput="calc()">
+    </div>
+    <div class="field">
+      <label>Nights</label>
+      <input type="number" id="nights" value="1" min="1" max="30" oninput="calc()">
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">Select Program</div>
+  <div class="program-grid" id="prog-grid"></div>
+  <div class="toggle-row">
+    <span class="tlabel">Override layers:</span>
+    <div class="tog on" id="tog-mobile" onclick="toggleLayer('mobile')">
+      <span class="tog-dot"></span>
+      <span id="tog-mobile-lbl">Mobile ON</span>
+    </div>
+    <div class="pct-input">
+      <input type="number" id="mobile-pct" value="10" min="0" max="30" step="1" oninput="calc()">
+      <span>%</span>
+    </div>
+    <div class="tog on" id="tog-member" onclick="toggleLayer('member')" style="margin-left:8px">
+      <span class="tog-dot"></span>
+      <span id="tog-member-lbl">Member ON</span>
+    </div>
+    <div class="pct-input">
+      <input type="number" id="member-pct" value="10" min="0" max="20" step="1" oninput="calc()">
+      <span>%</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="result-grid">
+  <div class="mcard"><div class="mlabel">Guest pays / night</div><div class="mval" id="r-guest">—</div><div class="msub" id="r-guest-t">—</div></div>
+  <div class="mcard"><div class="mlabel">Your net revenue / night</div><div class="mval" id="r-net">—</div><div class="msub" id="r-net-t">—</div></div>
+  <div class="mcard"><div class="mlabel">OTA commission / night</div><div class="mval" id="r-comm">—</div><div class="msub" id="r-comm-m">—</div></div>
+  <div class="mcard"><div class="mlabel">Net as % of BAR</div><div class="mval" id="r-pct">—</div><div class="msub" id="r-pct-s">—</div></div>
+</div>
+
+<div id="wf"></div>
+<div class="info" id="info"></div>
+<div class="ver">Munduk Tentrem OTA Rate Tool · v4 · May 2026</div>
+</div>
+
+<script>
+const BAR_TABLE={DLX:{low:2070000,high:3900000,peak:4590000},JRST:{low:2740000,high:4440000,peak:5410000},ST:{low:3330000,high:5200000,peak:5950000}};
+
+const PROGRAMS=[
+  {ota:'B.com',name:'BASIC 10',stay:'1 night',promo:.10,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'multiplicative_all',period:'All dates',note:'Basic 10% stacks with mobile and member'},
+  {ota:'B.com',name:'CAMPAIGN N2 20',stay:'Min 2 nights',promo:.20,member:.10,mobile:.00,comm:.18,commTiming:'after_guest_pay',logic:'campaign_member_only',period:'May 1–Sep 15',note:'Campaign stacks with member only — no mobile per Bcom rules'},
+  {ota:'B.com',name:'CAMPAIGN N3 25',stay:'Min 3 nights',promo:.25,member:.10,mobile:.00,comm:.18,commTiming:'after_guest_pay',logic:'campaign_member_only',period:'May 1–Sep 15',note:'Campaign stacks with member only — no mobile per Bcom rules'},
+  {ota:'B.com',name:'EB30 N2 20',stay:'Min 2 nights, book 30+ days',promo:.20,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'multiplicative_all',period:'Sep 16 onward',note:'EB stacks with member and mobile'},
+  {ota:'B.com',name:'EB30 N3 25',stay:'Min 3 nights, book 30+ days',promo:.25,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'multiplicative_all',period:'Sep 16 onward',note:'EB stacks with member and mobile'},
+  {ota:'Expedia',name:'EXP BASIC 10',stay:'1 night',promo:.10,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'mobile_then_additive_member_promo',period:'All dates',note:'Mobile multiplicative first, then member+promo additive'},
+  {ota:'Expedia',name:'EXP SPECIAL N2 10',stay:'Min 2 nights',promo:.10,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'mobile_then_additive_member_promo',period:'May 1–Sep 15',note:'Equivalent final price to B.com N2'},
+  {ota:'Expedia',name:'EXP SPECIAL N3 15',stay:'Min 3 nights',promo:.15,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'mobile_then_additive_member_promo',period:'May 1–Sep 15',note:'Equivalent final price to B.com N3'},
+  {ota:'Expedia',name:'EXP EB30 N2 10',stay:'Min 2 nights, book 30+ days',promo:.10,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'mobile_then_additive_member_promo',period:'Sep 16 onward',note:'Lower promo needed — Expedia structure goes deeper'},
+  {ota:'Expedia',name:'EXP EB30 N3 15',stay:'Min 3 nights, book 30+ days',promo:.15,member:.10,mobile:.10,comm:.18,commTiming:'after_guest_pay',logic:'mobile_then_additive_member_promo',period:'Sep 16 onward',note:'Lower promo needed — Expedia structure goes deeper'},
+  {ota:'Trip',name:'TRIP BASIC 4',stay:'1 night',promo:.04,member:.10,mobile:.00,comm:.15,commTiming:'before_discounts_from_BAR',logic:'trip_commission_then_additive_member_promo',period:'All dates',note:'Commission from BAR first. Promo+member additive. Mobile off.'},
+  {ota:'Trip',name:'TRIP MIN STAY N2 5',stay:'Min 2 nights',promo:.05,member:.10,mobile:.00,comm:.15,commTiming:'before_discounts_from_BAR',logic:'trip_commission_then_additive_member_promo',period:'All dates',note:'Mobile off. Close to B.com N2 final.'},
+  {ota:'Trip',name:'TRIP MIN STAY N3 11',stay:'Min 3 nights',promo:.11,member:.10,mobile:.00,comm:.15,commTiming:'before_discounts_from_BAR',logic:'trip_commission_then_additive_member_promo',period:'All dates',note:'Mobile off. Close to B.com N3 final.'},
+];
+
+let selIdx=0,mobileOn=true,memberOn=true;
+
+function toggleCtx(){
+  const body=document.getElementById('ctx-body');
+  const lbl=document.getElementById('ctx-toggle-lbl');
+  const open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  body.classList.toggle('closed',open);
+  lbl.textContent=open?'▼ Show context':'▲ Hide context';
+}
+
+function copyResume(){
+  const text=document.getElementById('resume-text').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const ok=document.getElementById('copy-ok');
+    ok.style.display='inline';
+    setTimeout(()=>{ok.style.display='none'},2000);
+  });
+}
+
+function toggleLayer(which){
+  if(which==='mobile'){
+    mobileOn=!mobileOn;
+    document.getElementById('tog-mobile').className='tog '+(mobileOn?'on':'off');
+    document.getElementById('tog-mobile-lbl').textContent='Mobile '+(mobileOn?'ON':'OFF');
+  } else {
+    memberOn=!memberOn;
+    document.getElementById('tog-member').className='tog '+(memberOn?'on':'off');
+    document.getElementById('tog-member-lbl').textContent='Member '+(memberOn?'ON':'OFF');
+  }
+  calc();
+}
+
+function getOverrides(){
+  const mobilePct=mobileOn?(parseFloat(document.getElementById('mobile-pct').value)||0)/100:0;
+  const memberPct=memberOn?(parseFloat(document.getElementById('member-pct').value)||0)/100:0;
+  return{mobilePct,memberPct};
+}
+
+function fmt(n){return'IDR '+Math.round(n).toLocaleString('id-ID')}
+function pct(n){return(n*100).toFixed(1)+'%'}
+
+function setBAR(){
+  const r=document.getElementById('room').value;
+  const s=document.getElementById('season').value;
+  document.getElementById('bar').value=BAR_TABLE[r][s];
+  calc();
+}
+
+function calcAndWaterfall(p,bar,mobilePct,memberPct){
+  const l=p.logic;
+  const rows=[];
+  let guestPrice=bar;
+  rows.push({lbl:'BAR',val:bar,type:'base',note:''});
+
+  if(l==='multiplicative_all'){
+    const a1=bar*(1-p.promo);
+    rows.push({lbl:`Promo (${pct(p.promo)}) — your cost`,deduct:bar-a1,val:a1,type:'deduct',note:`${pct(p.promo)} of BAR`});
+    if(mobileOn&&mobilePct>0){const a2=a1*(1-mobilePct);rows.push({lbl:`Mobile (${pct(mobilePct)}) — your cost`,deduct:a1-a2,val:a2,type:'deduct',note:`${pct(mobilePct)} of ${fmt(a1)}`});guestPrice=a2;}
+    else{rows.push({lbl:'Mobile — skipped',val:a1,type:'skip',note:'toggled OFF'});guestPrice=a1;}
+    if(memberOn&&memberPct>0){const a3=guestPrice*(1-memberPct);rows.push({lbl:`Member (${pct(memberPct)}) — your cost`,deduct:guestPrice-a3,val:a3,type:'deduct',note:`${pct(memberPct)} of ${fmt(guestPrice)}`});guestPrice=a3;}
+    else{rows.push({lbl:'Member — skipped',val:guestPrice,type:'skip',note:'toggled OFF'});}
+    rows.push({lbl:'= Guest pays',val:guestPrice,type:'sub',note:''});
+    const comm=guestPrice*p.comm;
+    rows.push({lbl:`Bcom commission (${pct(p.comm)}) on guest price`,deduct:comm,val:guestPrice-comm,type:'deduct',note:''});
+    guestPrice=guestPrice-comm;
+  }
+  else if(l==='campaign_member_only'){
+    const a1=bar*(1-p.promo);
+    rows.push({lbl:`Campaign promo (${pct(p.promo)}) — your cost`,deduct:bar-a1,val:a1,type:'deduct',note:`${pct(p.promo)} of BAR`});
+    rows.push({lbl:'Mobile — not available for campaigns (Bcom rule)',val:a1,type:'skip',note:'Bcom campaign structure excludes mobile layer'});
+    if(memberOn&&memberPct>0){const a2=a1*(1-memberPct);rows.push({lbl:`Member (${pct(memberPct)}) — your cost`,deduct:a1-a2,val:a2,type:'deduct',note:`${pct(memberPct)} of ${fmt(a1)}`});guestPrice=a2;}
+    else{rows.push({lbl:'Member — skipped',val:a1,type:'skip',note:'toggled OFF'});guestPrice=a1;}
+    rows.push({lbl:'= Guest pays',val:guestPrice,type:'sub',note:''});
+    const comm=guestPrice*p.comm;
+    rows.push({lbl:`Bcom commission (${pct(p.comm)}) on guest price`,deduct:comm,val:guestPrice-comm,type:'deduct',note:''});
+    guestPrice=guestPrice-comm;
+  }
+  else if(l==='mobile_then_additive_member_promo'){
+    let afterMobile=bar;
+    if(mobileOn&&mobilePct>0){afterMobile=bar*(1-mobilePct);rows.push({lbl:`Mobile (${pct(mobilePct)}) — multiplicative first`,deduct:bar-afterMobile,val:afterMobile,type:'deduct',note:`${pct(mobilePct)} of BAR`});}
+    else{rows.push({lbl:'Mobile — skipped',val:bar,type:'skip',note:'toggled OFF'});}
+    const effectiveMember=memberOn?memberPct:0;
+    const additivePct=effectiveMember+p.promo;
+    const addAmt=afterMobile*additivePct;
+    const parts=effectiveMember>0?[`Member ${pct(effectiveMember)}`]:['Member OFF'];
+    parts.push(`Promo ${pct(p.promo)}`);
+    rows.push({lbl:`${parts.join(' + ')} — additive on mobile-adjusted price`,deduct:addAmt,val:afterMobile-addAmt,type:'warn',note:`(${pct(additivePct)}) × ${fmt(afterMobile)}`});
+    guestPrice=afterMobile-addAmt;
+    rows.push({lbl:'= Guest pays',val:guestPrice,type:'sub',note:''});
+    const comm=guestPrice*p.comm;
+    rows.push({lbl:`Expedia commission (${pct(p.comm)}) on guest price`,deduct:comm,val:guestPrice-comm,type:'deduct',note:''});
+    guestPrice=guestPrice-comm;
+  }
+  else if(l==='trip_commission_then_additive_member_promo'){
+    const netBase=bar*(1-p.comm);
+    rows.push({lbl:`Trip commission (${pct(p.comm)}) from BAR first`,deduct:bar-netBase,val:netBase,type:'deduct',note:`Your net base locked at ${fmt(netBase)}`});
+    rows.push({lbl:'Mobile — always OFF on Trip.com',val:netBase,type:'skip',note:'Trip does not support mobile rate layer'});
+    const effectiveMember=memberOn?memberPct:0;
+    const additivePct=p.promo+effectiveMember;
+    const addAmt=netBase*additivePct;
+    const parts=[`Promo ${pct(p.promo)}`];
+    if(effectiveMember>0)parts.push(`Member ${pct(effectiveMember)}`);else parts.push('Member OFF');
+    rows.push({lbl:`${parts.join(' + ')} — additive on net base`,deduct:addAmt,val:netBase-addAmt,type:'warn',note:'Guest price = net base minus these'});
+    guestPrice=netBase-addAmt;
+    rows.push({lbl:'= Guest pays (= your net on Trip)',val:guestPrice,type:'sub',note:'Commission already deducted above'});
+  }
+
+  rows.push({lbl:'Your net revenue / night',val:guestPrice,type:'ok',note:''});
+  return{rows,net:guestPrice};
+}
+
+function calc(){
+  const p=PROGRAMS[selIdx];
+  const bar=parseFloat(document.getElementById('bar').value)||0;
+  const nights=parseInt(document.getElementById('nights').value)||1;
+  if(!bar)return;
+  const{mobilePct,memberPct}=getOverrides();
+  const{rows,net}=calcAndWaterfall(p,bar,mobilePct,memberPct);
+  const subRow=rows.find(r=>r.type==='sub');
+  const guestDisplay=subRow?subRow.val:net;
+  const commAmt=p.logic==='trip_commission_then_additive_member_promo'?bar*p.comm:guestDisplay*p.comm;
+  const netPct=net/bar;
+  document.getElementById('r-guest').textContent=fmt(guestDisplay);
+  document.getElementById('r-guest-t').textContent=nights>1?`${nights} nights: ${fmt(guestDisplay*nights)}`:'per night';
+  document.getElementById('r-net').textContent=fmt(net);
+  document.getElementById('r-net-t').textContent=nights>1?`${nights} nights: ${fmt(net*nights)}`:`${(netPct*100).toFixed(1)}% of BAR`;
+  document.getElementById('r-comm').textContent=fmt(commAmt);
+  document.getElementById('r-comm-m').textContent=`${pct(p.comm)} ${p.commTiming==='before_discounts_from_BAR'?'of BAR (taken first)':'of guest price'}`;
+  document.getElementById('r-pct').textContent=(netPct*100).toFixed(1)+'%';
+  document.getElementById('r-pct-s').textContent=`You keep ${fmt(net)} of ${fmt(bar)} BAR`;
+  document.getElementById('wf').innerHTML=rows.map(r=>{
+    const ds=r.deduct!=null?`<span class="wf-note" style="margin-left:4px">−${fmt(r.deduct)}</span>`:'';
+    const ns=r.note?`<span class="wf-note" style="margin-left:6px">${r.note}</span>`:'';
+    return`<div class="wfrow ${r.type}"><span class="wf-lbl">${r.lbl}${ns}</span>${r.deduct!=null?ds:''}<span class="wf-val">${fmt(r.val)}</span></div>`;
+  }).join('');
+  const ld={
+    multiplicative_all:`Bcom multiplicative: each layer (promo → mobile → member) applies to the already-reduced price. Commission ${pct(p.comm)} on final guest price.`,
+    campaign_member_only:`Bcom Campaign: mobile layer is excluded by Bcom's own rules regardless of your toggle. Member stacks on top of campaign discount.`,
+    mobile_then_additive_member_promo:`Expedia: mobile is applied multiplicatively first. Then member % + promo % are combined additively on the mobile-adjusted price — this is why Expedia needs lower headline promo rates to match Bcom's final guest price.`,
+    trip_commission_then_additive_member_promo:`Trip.com: your 15% commission is deducted from BAR before anything else — your net base is fixed. Guest sees BAR minus commission, then promo and member reduce further from that net. Mobile layer does not exist on Trip.`
+  };
+  document.getElementById('info').innerHTML=`<span style="opacity:.85">${ld[p.logic]}</span><br><span style="opacity:.6;font-size:11px">Period: ${p.period} · ${p.stay} · ${p.note}</span>`;
+}
+
+function syncTogglesFromProgram(p){
+  mobileOn=p.mobile>0;memberOn=true;
+  document.getElementById('mobile-pct').value=Math.round((p.mobile||0.10)*100);
+  document.getElementById('member-pct').value=Math.round((p.member||0.10)*100);
+  document.getElementById('tog-mobile').className='tog '+(mobileOn?'on':'off');
+  document.getElementById('tog-mobile-lbl').textContent='Mobile '+(mobileOn?'ON':'OFF');
+  document.getElementById('tog-member').className='tog on';
+  document.getElementById('tog-member-lbl').textContent='Member ON';
+}
+
+function renderGrid(){
+  const g=document.getElementById('prog-grid');g.innerHTML='';
+  ['B.com','Expedia','Trip'].forEach(ota=>{
+    const badge=ota==='B.com'?'bc':ota==='Expedia'?'ex':'tr';
+    PROGRAMS.forEach((p,i)=>{
+      if(p.ota!==ota)return;
+      const btn=document.createElement('button');
+      btn.className='prog-btn'+(i===selIdx?' active':'');
+      btn.innerHTML=`<span class="pname"><span class="otabadge ${badge}">${p.ota}</span>${p.name}</span><span class="pmeta">${p.stay} · ${p.period}</span>`;
+      btn.onclick=()=>{selIdx=i;syncTogglesFromProgram(PROGRAMS[i]);renderGrid();calc();};
+      g.appendChild(btn);
+    });
+  });
+}
+
+syncTogglesFromProgram(PROGRAMS[0]);
+renderGrid();
+calc();
+</script>
+</body>
+</html>
