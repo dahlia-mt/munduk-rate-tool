@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Munduk Tentrem — Staff Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F1E6;
+  --ink:#26291F;
+  --ink-soft:#5B5D4F;
+  --pine:#2F3F30;
+  --pine-deep:#212D22;
+  --sand:#ECE5D2;
+  --sand-line:#DAD1B8;
+  --stone:#C7C1AE;
+  --gold:#C08A2E;
+  --gold-soft:#EEDCB1;
+  --brick:#A85138;
+  --brick-soft:#EFD3C7;
+  --plum:#7C5169;
+  --plum-soft:#E7D6E0;
+  --sage:#5F7A54;
+  --sage-soft:#DDE6D3;
+  --clay:#9C6B3B;
+  --clay-soft:#EEDFC9;
+  --mist:#5A7686;
+  --mist-soft:#DCE5E8;
+  --radius:14px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;}
+body{padding-bottom:40px;}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+
+/* ===== Header ===== */
+.hero{
+  background:linear-gradient(160deg, var(--pine) 0%, var(--pine-deep) 100%);
+  color:#F2EFE2;
+  padding:22px 18px 26px;
+  position:relative;
+  overflow:hidden;
+}
+.hero svg.contours{position:absolute; inset:0; opacity:.16; width:100%; height:100%;}
+.hero-content{position:relative; z-index:1;}
+.eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.72; font-weight:600; margin-bottom:4px;}
+.hero h1{font-size:24px; font-weight:600; margin:0 0 2px; letter-spacing:-.01em;}
+.hero .sub{font-size:12.5px; opacity:.78; font-weight:400;}
+
+/* ===== Tabs ===== */
+.tabs{display:flex; gap:6px; padding:14px 16px 0; background:var(--bg);}
+.tab-btn{
+  flex:1; text-align:center; padding:10px 8px; border-radius:10px; border:1px solid var(--sand-line);
+  background:var(--sand); color:var(--ink-soft); font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600;
+  cursor:pointer; transition:all .15s;
+}
+.tab-btn.active{background:var(--pine); color:#F2EFE2; border-color:var(--pine);}
+
+/* ===== Content wrap ===== */
+.content{padding:14px 16px 8px;}
+
+/* ===== Date nav (By Date view) ===== */
+.date-nav{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+.date-nav button.arrow{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--sand-line); background:#fff;
+  font-size:16px; color:var(--pine); cursor:pointer; flex-shrink:0;
+}
+.date-nav button.arrow:disabled{opacity:.3;}
+.date-display{flex:1; text-align:center;}
+.date-display .dow{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:600;}
+.date-display .dnum{font-family:'Fraunces',serif; font-size:22px; font-weight:600; line-height:1.15;}
+.date-display .holiday-tag{
+  display:inline-block; margin-top:2px; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:20px;
+}
+.date-scrub{display:flex; gap:5px; overflow-x:auto; padding:10px 2px 4px; margin-bottom:10px; scrollbar-width:none;}
+.date-scrub::-webkit-scrollbar{display:none;}
+.date-chip{
+  flex-shrink:0; width:44px; padding:7px 0; border-radius:10px; text-align:center; border:1px solid var(--sand-line);
+  background:#fff; cursor:pointer; font-size:11px; color:var(--ink-soft);
+}
+.date-chip .cd{font-weight:700; font-size:14px; color:var(--ink);}
+.date-chip.selected{background:var(--pine); border-color:var(--pine);}
+.date-chip.selected, .date-chip.selected .cd{color:#F2EFE2;}
+.date-chip.ph{border-color:var(--gold);}
+
+/* ===== Department cards ===== */
+.dept{margin-bottom:12px;}
+.dept-title{
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--pine);
+  margin:0 0 6px 2px; display:flex; align-items:center; gap:6px;
+}
+.dept-title::before{content:''; width:10px; height:2px; background:var(--gold); display:inline-block;}
+.staff-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:#fff; border:1px solid var(--sand-line); border-radius:var(--radius);
+  padding:11px 13px; margin-bottom:6px;
+}
+.staff-info{min-width:0;}
+.staff-name{font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.staff-pos{font-size:11px; color:var(--ink-soft); margin-top:1px;}
+.shift-badge{
+  flex-shrink:0; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; min-width:52px; text-align:center;
+}
+
+/* ===== Staff view ===== */
+.staff-picker{margin-bottom:12px;}
+.search-box{
+  width:100%; padding:11px 14px; border-radius:12px; border:1px solid var(--sand-line); background:#fff;
+  font-size:14px; font-family:'Inter',sans-serif; margin-bottom:10px;
+}
+.staff-list{display:flex; flex-direction:column; gap:6px; max-height:0; overflow:hidden; transition:max-height .25s ease;}
+.staff-list.open{max-height:2000px;}
+.staff-pick-row{
+  display:flex; justify-content:space-between; align-items:center; padding:10px 13px; background:#fff;
+  border:1px solid var(--sand-line); border-radius:10px; cursor:pointer; font-size:13.5px;
+}
+.staff-pick-row .name{font-weight:600;}
+.staff-pick-row .dept-tag{font-size:10.5px; color:var(--ink-soft);}
+.selected-staff-header{
+  background:#fff; border:1px solid var(--sand-line); border-radius:var(--radius); padding:14px 16px; margin-bottom:12px;
+  display:flex; justify-content:space-between; align-items:center; cursor:pointer;
+}
+.selected-staff-header .name{font-family:'Fraunces',serif; font-size:19px; font-weight:600;}
+.selected-staff-header .meta{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+.month-grid{display:flex; flex-direction:column; gap:5px;}
+.month-row{
+  display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--sand-line);
+  border-radius:10px; padding:9px 13px;
+}
+.month-row .md{width:56px; flex-shrink:0;}
+.month-row .md .dow{font-size:10px; text-transform:uppercase; color:var(--ink-soft); letter-spacing:.05em;}
+.month-row .md .num{font-weight:700; font-size:14px;}
+.month-row .badge-wrap{flex:1; text-align:right;}
+.month-row.is-ph{background:var(--gold-soft);}
+.month-row.is-flag{background:var(--brick-soft);}
+
+/* ===== Legend ===== */
+.legend-toggle{
+  width:100%; text-align:left; background:var(--sand); border:1px solid var(--sand-line); border-radius:12px;
+  padding:12px 14px; font-size:13px; font-weight:600; color:var(--pine); cursor:pointer; margin-top:6px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.legend-body{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+.legend-body.open{max-height:900px; margin-top:8px;}
+.legend-grid{display:flex; flex-direction:column; gap:6px;}
+.legend-item{display:flex; align-items:center; gap:10px; font-size:12.5px; background:#fff; border:1px solid var(--sand-line); border-radius:10px; padding:9px 12px;}
+.legend-item .dot{width:34px; text-align:center; font-size:11px; font-weight:700; padding:4px 0; border-radius:8px; flex-shrink:0;}
+.legend-item .desc{color:var(--ink-soft);}
+
+.empty-note{font-size:12.5px; color:var(--ink-soft); text-align:center; padding:24px 10px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <svg class="contours" viewBox="0 0 400 140" preserveAspectRatio="none">
+    <path d="M-10,110 Q60,80 120,100 T240,90 T400,105" stroke="#F2EFE2" stroke-width="1.2" fill="none"/>
+    <path d="M-10,125 Q70,95 130,115 T250,105 T400,120" stroke="#F2EFE2" stroke-width="1.2" fill="none"/>
+    <path d="M-10,90 Q50,60 110,82 T230,70 T400,88" stroke="#F2EFE2" stroke-width="1" fill="none"/>
+    <path d="M-10,60 Q40,35 100,55 T220,42 T400,58" stroke="#F2EFE2" stroke-width=".8" fill="none"/>
+  </svg>
+  <div class="hero-content">
+    <div class="eyebrow">Munduk Tentrem · 1,300m</div>
+    <h1>Staff Schedule</h1>
+    <div class="sub" id="range-label">Jul 28 – Aug 31, 2026</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-date">By Date</button>
+  <button class="tab-btn" id="tab-staff">By Staff</button>
+</div>
+
+<div class="content">
+
+  <!-- BY DATE VIEW -->
+  <div id="view-date">
+    <div class="date-nav">
+      <button class="arrow" id="prev-day">‹</button>
+      <div class="date-display">
+        <div class="dow" id="cur-dow">—</div>
+        <div class="dnum" id="cur-dnum">—</div>
+        <div id="cur-holiday"></div>
+      </div>
+      <button class="arrow" id="next-day">›</button>
+    </div>
+    <div class="date-scrub" id="date-scrub"></div>
+    <div id="date-departments"></div>
+  </div>
+
+  <!-- BY STAFF VIEW -->
+  <div id="view-staff" style="display:none;">
+    <div class="staff-picker">
+      <input class="search-box" id="staff-search" placeholder="Search staff by name…" />
+      <div class="staff-list open" id="staff-list"></div>
+    </div>
+    <div id="staff-detail"></div>
+  </div>
+
+  <button class="legend-toggle" id="legend-toggle">
+    <span>Shift &amp; color legend</span>
+    <span id="legend-arrow">▾</span>
+  </button>
+  <div class="legend-body" id="legend-body">
+    <div class="legend-grid" id="legend-grid"></div>
+  </div>
+
+</div>
+
+<script>
+const SCHEDULE = {"dates": ["2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31"], "sections": [{"name": "FO / BUTLER", "staff": [{"name": "DELI", "position": "FO / BUTLER", "libur": "KAMIS", "shifts": ["AFT", "OFF", "M", "M", "AFT", "AFT", "AFT", "M", "M", "OFF", "M", "AFT", "AFT", "AFT", "M", "M", "M", "OFF", "AFT", "AFT", "AFT", "M", "M", "OFF", "M", "AFT", "AFT", "AFT", "M", "M", "OFF", "M", "AFT", "AFT", "AFT"]}, {"name": "INDRA GUNAWAN", "position": "FO / BUTLER", "libur": "SELASA", "shifts": ["OFF", "AFT", "AFT", "AFT", "M", "M", "M", "AFT", "OFF", "AFT", "AFT", "M", "M", "M", "AFT", "OFF", "AFT", "AFT", "M", "M", "M", "OFF", "AFT", "AFT", "AFT", "M", "M", "M", "OFF", "AFT", "AFT", "AFT", "M", "M", "M"]}, {"name": "PASTIKA", "position": "FO / BUTLER", "libur": "JUMAT", "shifts": ["M", "M", "AFT", "OFF", "AFT", "AFT", "M", "AFT", "AFT", "AFT", "OFF", "AFT", "M", "M", "AFT", "AFT", "AFT", "M", "OFF", "M", "AFT", "AFT", "AFT", "M", "M", "OFF", "AFT", "AFT", "AFT", "M", "M", "OFF", "AFT", "AFT", "AFT"]}, {"name": "EVA", "position": "FO / BUTLER", "libur": "RABU", "shifts": ["AFT", "AFT", "OFF", "AFT", "M", "M", "AFT", "OFF", "AFT", "AFT", "AFT", "M", "AFT", "AFT", "OFF", "AFT", "M", "AFT", "AFT", "AFT", "M", "AFT", "OFF", "AFT", "AFT", "AFT", "M", "M", "AFT", "AFT", "AFT", "AFT", "OFF", "UL", "UL"]}, {"name": "WARDANI", "position": "PKL", "libur": "MINGGU", "shifts": ["M", "OFF", "OFF", "M", "M", "OFF", "AFT", "M", "M", "M", "M", "M", "OFF", "AFT", "M", "M", "M", "M", "M", "OFF", "AFT", "M", "M", "M", "M", "M", "OFF", "AFT", "M", "M", "M", "M", "OFF", "OFF", "AFT"]}]}, {"name": "HOUSEKEEPING (HK)", "staff": [{"name": "Mang Tri", "position": "HK", "libur": "SELASA", "shifts": ["M1", "M1", "M1", "M3", "M3", "M3", "M1", "M1", "M1", "M3", "OFF", "M3", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "OFF", "M1", "M1", "M3", "M3", "M3", "M1", "OFF", "M1", "M1", "M3", "M3", "M3", "M1"]}, {"name": "Angreni", "position": "HK", "libur": "SABTU", "shifts": ["M3", "M3", "M3", "M1", "OFF", "M1", "M1", "M3", "M3", "M3", "M1", "OFF", "M1", "M1", "OFF", "M3", "M3", "M3", "M1", "M1", "M1", "M3", "M3", "M3", "M1", "OFF", "M1", "M1", "M3", "M3", "M3", "M1", "OFF", "M1", "M1"]}, {"name": "Listya", "position": "PKL", "libur": "MINGGU", "shifts": ["M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3"]}, {"name": "Putri", "position": "PKL", "libur": "KAMIS", "shifts": ["M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1", "M3", "M3", "OFF", "M3", "M1", "M1", "M1"]}]}, {"name": "KITCHEN", "staff": [{"name": "KADEK ADI", "position": "SENIOR COOK", "libur": "SELASA", "shifts": ["OFF", "AFT", "AFT", "AFT", "SPLIT", "M", "M", "OFF", "AFT", "AFT", "AFT", "SPLIT", "M", "M", "OFF", "AFT", "AFT", "AFT", "SPLIT", "M", "M", "OFF", "AFT", "AFT", "AFT", "SPLIT", "M", "M", "OFF", "AFT", "AFT", "AFT", "SPLIT", "M", "M"]}, {"name": "PERMADI", "position": "DW", "libur": "JUMAT", "shifts": ["M", "SPLIT", "M", "OFF", "AFT", "AFT", "M", "M", "SPLIT", "M", "OFF", "AFT", "AFT", "M", "M", "SPLIT", "M", "OFF", "AFT", "AFT", "M", "M", "SPLIT", "M", "OFF", "AFT", "AFT", "M", "M", "SPLIT", "M", "OFF", "AFT", "AFT", "M"]}, {"name": "KRISMA", "position": "COOK", "libur": "RABU", "shifts": ["AFT", "OFF", "AFT", "SPLIT", "M", "M", "AFT", "AFT", "OFF", "AFT", "SPLIT", "M", "M", "AFT", "AFT", "OFF", "AFT", "SPLIT", "M", "M", "AFT", "AFT", "OFF", "AFT", "SPLIT", "M", "M", "AFT", "AFT", "OFF", "AFT", "SPLIT", "M", "M", "AFT"]}, {"name": "FIRMAN", "position": "SENIOR COOK", "libur": "SABTU", "shifts": ["SPLIT", "M", "M", "M", "OFF", "AFT", "AFT", "SPLIT", "M", "M", "M", "OFF", "AFT", "AFT", "SPLIT", "M", "M", "M", "OFF", "AFT", "AFT", "SPLIT", "M", "M", "M", "OFF", "AFT", "AFT", "SPLIT", "M", "M", "M", "OFF", "AFT", "AFT"]}]}, {"name": "ENGINEERING", "staff": [{"name": "IDA BAGUS", "position": "ENGINEERING", "libur": "RABU", "shifts": ["M", "OFF", "AFT", "AFT", "M", "AFT", "M", "M", "OFF", "AFT", "AFT", "M", "AFT", "M", "M", "OFF", "AFT", "AFT", "M", "AFT", "M", "M", "OFF", "AFT", "AFT", "M", "AFT", "M", "M", "OFF", "AFT", "AFT", "M", "AFT", "M"]}]}, {"name": "SECURITY", "staff": [{"name": "KETUT RENCANA", "position": "SECURITY", "libur": "SABTU", "shifts": ["22", "22", "22", "22", "OFF", "22", "22", "22", "22", "22", "22", "OFF", "22", "22", "22", "22", "22", "22", "OFF", "22", "22", "22", "22", "22", "22", "OFF", "22", "22", "22", "22", "22", "22", "OFF", "22", "22"]}]}, {"name": "GARDEN", "staff": [{"name": "KOMANG ARIANTINI", "position": "GARDEN", "libur": "SELASA", "shifts": ["OFF", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "OFF", "OFF", "M", "M", "M", "M"]}, {"name": "GEDE", "position": "GARDEN", "libur": "KAMIS", "shifts": ["M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M"]}, {"name": "PURNATA", "position": "GARDEN", "libur": "RABU", "shifts": ["OFF", "M", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M"]}, {"name": "APRI", "position": "GARDEN", "libur": "MINGGU", "shifts": ["M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M", "M", "M", "M", "M", "M", "OFF", "M"]}]}, {"name": "ACCOUNTING", "staff": [{"name": "DWITA", "position": "ACCOUNTING", "libur": "KAMIS", "shifts": ["OFF", "M2", "M2", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2"]}]}, {"name": "DATA ENTRY", "staff": [{"name": "SRI", "position": "DATA ENTRY", "libur": "MINGGU", "shifts": ["M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2"]}, {"name": "ELSY", "position": "INTERN", "libur": "MINGGU", "shifts": ["M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2", "M2", "M2", "M2", "M2", "M2", "OFF", "M2"]}]}]};
+
+const SHIFT_META = {
+  'M':     {label:'M',    bg:'var(--sage-soft)',  fg:'var(--sage)',  desc:'Morning · 07:00–15:00'},
+  'M1':    {label:'M1',   bg:'var(--sage-soft)',  fg:'var(--sage)',  desc:'Morning 1 · 08:00–16:00'},
+  'M2':    {label:'M2',   bg:'var(--sage-soft)',  fg:'var(--sage)',  desc:'Morning 2 · 09:00–17:00'},
+  'M3':    {label:'M3',   bg:'var(--sage-soft)',  fg:'var(--sage)',  desc:'Morning 3 · 10:00–18:00'},
+  'AFT':   {label:'AFT',  bg:'var(--clay-soft)',  fg:'var(--clay)',  desc:'Afternoon · 14:00–22:00'},
+  'SPLIT': {label:'SPLIT',bg:'var(--mist-soft)',  fg:'var(--mist)',  desc:'Split · 07:00–10:00 & 17:00–22:00'},
+  'OFF':   {label:'OFF',  bg:'var(--stone)',      fg:'#4A4A40',      desc:'Weekly day off'},
+  'UL':    {label:'UL',   bg:'var(--plum-soft)',  fg:'var(--plum)',  desc:'Unpaid Leave'},
+  '22':    {label:'22:00',bg:'var(--mist-soft)',  fg:'var(--mist)',  desc:'Security report time · duration unconfirmed'},
+};
+function shiftMeta(v){
+  if(!v) return {label:'—', bg:'#F1EEE3', fg:'#9A9686', desc:''};
+  return SHIFT_META[v] || {label:v, bg:'#F1EEE3', fg:'#5B5D4F', desc:''};
+}
+
+const PH_DATES = { '2026-08-17': 'Independence Day', '2026-08-25': 'Muslim Holiday' };
+const DOW_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmtDate(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return { dow: DOW_NAMES[d.getDay()], day: d.getDate(), month: MONTH_NAMES[d.getMonth()] };
+}
+
+let dateIdx = SCHEDULE.dates.indexOf('2026-08-01');
+if(dateIdx < 0) dateIdx = 0;
+
+// ---------- BY DATE VIEW ----------
+function renderDateView(){
+  const iso = SCHEDULE.dates[dateIdx];
+  const f = fmtDate(iso);
+  document.getElementById('cur-dow').textContent = f.dow + 'day';
+  document.getElementById('cur-dnum').textContent = f.day + ' ' + f.month + ' 2026';
+  const holidayEl = document.getElementById('cur-holiday');
+  if(PH_DATES[iso]){
+    const isFlag = iso === '2026-08-25';
+    holidayEl.innerHTML = `<span class="holiday-tag" style="background:${isFlag ? 'var(--brick-soft)' : 'var(--gold-soft)'}; color:${isFlag ? 'var(--brick)' : 'var(--gold)'}">${PH_DATES[iso]}</span>`;
+  } else {
+    holidayEl.innerHTML = '';
+  }
+
+  document.getElementById('prev-day').disabled = dateIdx === 0;
+  document.getElementById('next-day').disabled = dateIdx === SCHEDULE.dates.length - 1;
+
+  // department cards
+  const wrap = document.getElementById('date-departments');
+  wrap.innerHTML = '';
+  SCHEDULE.sections.forEach(sec => {
+    const deptDiv = document.createElement('div');
+    deptDiv.className = 'dept';
+    const title = document.createElement('div');
+    title.className = 'dept-title';
+    title.textContent = sec.name;
+    deptDiv.appendChild(title);
+    sec.staff.forEach(st => {
+      const val = st.shifts[dateIdx];
+      const meta = shiftMeta(val);
+      const row = document.createElement('div');
+      row.className = 'staff-row';
+      row.innerHTML = `
+        <div class="staff-info">
+          <div class="staff-name">${st.name}</div>
+          <div class="staff-pos">${st.position || ''}</div>
+        </div>
+        <div class="shift-badge" style="background:${meta.bg}; color:${meta.fg}">${meta.label}</div>
+      `;
+      deptDiv.appendChild(row);
+    });
+    wrap.appendChild(deptDiv);
+  });
+
+  renderScrub();
+}
+
+function renderScrub(){
+  const scrub = document.getElementById('date-scrub');
+  scrub.innerHTML = '';
+  SCHEDULE.dates.forEach((iso, i) => {
+    const f = fmtDate(iso);
+    const chip = document.createElement('div');
+    chip.className = 'date-chip' + (i === dateIdx ? ' selected' : '') + (PH_DATES[iso] ? ' ph' : '');
+    chip.innerHTML = `<div>${f.dow}</div><div class="cd">${f.day}</div>`;
+    chip.onclick = () => { dateIdx = i; renderDateView(); scrollChipIntoView(); };
+    scrub.appendChild(chip);
+  });
+  scrollChipIntoView();
+}
+function scrollChipIntoView(){
+  const scrub = document.getElementById('date-scrub');
+  const chip = scrub.children[dateIdx];
+  if(chip) scrub.scrollLeft = chip.offsetLeft - scrub.clientWidth/2 + chip.clientWidth/2;
+}
+
+document.getElementById('prev-day').onclick = () => { if(dateIdx>0){ dateIdx--; renderDateView(); } };
+document.getElementById('next-day').onclick = () => { if(dateIdx<SCHEDULE.dates.length-1){ dateIdx++; renderDateView(); } };
+
+// ---------- BY STAFF VIEW ----------
+let allStaff = [];
+SCHEDULE.sections.forEach(sec => sec.staff.forEach(st => allStaff.push({...st, dept: sec.name})));
+let selectedStaffName = null;
+
+function renderStaffList(filter){
+  const listEl = document.getElementById('staff-list');
+  listEl.innerHTML = '';
+  const f = (filter||'').toLowerCase();
+  allStaff.filter(st => st.name.toLowerCase().includes(f)).forEach(st => {
+    const row = document.createElement('div');
+    row.className = 'staff-pick-row';
+    row.innerHTML = `<span class="name">${st.name}</span><span class="dept-tag">${st.dept}</span>`;
+    row.onclick = () => { selectedStaffName = st.name; renderStaffDetail(); listEl.classList.remove('open'); };
+    listEl.appendChild(row);
+  });
+}
+
+function renderStaffDetail(){
+  const detailEl = document.getElementById('staff-detail');
+  if(!selectedStaffName){ detailEl.innerHTML = '<div class="empty-note">Pick a staff member above to see their full schedule.</div>'; return; }
+  const st = allStaff.find(s => s.name === selectedStaffName);
+  let html = `
+    <div class="selected-staff-header" id="staff-header-toggle">
+      <div>
+        <div class="name">${st.name}</div>
+        <div class="meta">${st.position || ''} · ${st.dept} · Day off: ${st.libur || '—'}</div>
+      </div>
+      <div style="font-size:20px; color:var(--pine);">⌄</div>
+    </div>
+    <div class="month-grid">
+  `;
+  SCHEDULE.dates.forEach((iso, i) => {
+    const f = fmtDate(iso);
+    const val = st.shifts[i];
+    const meta = shiftMeta(val);
+    const isPH = !!PH_DATES[iso];
+    const isFlag = iso === '2026-08-25';
+    html += `
+      <div class="month-row ${isFlag ? 'is-flag' : (isPH ? 'is-ph' : '')}">
+        <div class="md"><div class="dow">${f.dow} ${f.month}</div><div class="num">${f.day}</div></div>
+        <div class="badge-wrap"><span class="shift-badge" style="background:${meta.bg}; color:${meta.fg}">${meta.label}</span></div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  detailEl.innerHTML = html;
+  document.getElementById('staff-header-toggle').onclick = () => {
+    document.getElementById('staff-list').classList.toggle('open');
+  };
+}
+
+document.getElementById('staff-search').addEventListener('input', e => {
+  renderStaffList(e.target.value);
+  document.getElementById('staff-list').classList.add('open');
+});
+document.getElementById('staff-search').addEventListener('focus', () => {
+  document.getElementById('staff-list').classList.add('open');
+});
+
+// ---------- TABS ----------
+document.getElementById('tab-date').onclick = () => {
+  document.getElementById('tab-date').classList.add('active');
+  document.getElementById('tab-staff').classList.remove('active');
+  document.getElementById('view-date').style.display = '';
+  document.getElementById('view-staff').style.display = 'none';
+};
+document.getElementById('tab-staff').onclick = () => {
+  document.getElementById('tab-staff').classList.add('active');
+  document.getElementById('tab-date').classList.remove('active');
+  document.getElementById('view-staff').style.display = '';
+  document.getElementById('view-date').style.display = 'none';
+};
+
+// ---------- LEGEND ----------
+document.getElementById('legend-toggle').onclick = () => {
+  document.getElementById('legend-body').classList.toggle('open');
+  const arrow = document.getElementById('legend-arrow');
+  arrow.textContent = document.getElementById('legend-body').classList.contains('open') ? '▴' : '▾';
+};
+function renderLegend(){
+  const grid = document.getElementById('legend-grid');
+  const order = ['M','M1','M2','M3','AFT','SPLIT','OFF','UL','22'];
+  grid.innerHTML = order.map(code => {
+    const m = SHIFT_META[code];
+    return `<div class="legend-item"><div class="dot" style="background:${m.bg}; color:${m.fg}">${m.label}</div><div class="desc">${m.desc}</div></div>`;
+  }).join('') + `
+    <div class="legend-item"><div class="dot" style="background:var(--gold-soft); color:var(--gold)">NH</div><div class="desc">Aug 17 — Independence Day</div></div>
+    <div class="legend-item"><div class="dot" style="background:var(--brick-soft); color:var(--brick)">NH</div><div class="desc">Aug 25 — Muslim Holiday</div></div>
+  `;
+}
+
+renderLegend();
+renderStaffList('');
+renderDateView();
+</script>
+
+</body>
+</html>
