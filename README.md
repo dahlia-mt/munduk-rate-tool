@@ -1,2 +1,2 @@
-# munduk-rate-tool
-Munduk Tentrem BAR &amp; Promotion Calculator
+# MundukTentrem-schedule
+Munduk Tentrem staff schedule app
